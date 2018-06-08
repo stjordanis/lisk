@@ -267,7 +267,7 @@ __private.forge = function(cb) {
 			if (modules.transport.poorConsensus()) {
 				const consensusErr = [
 					'Inadequate broadhash consensus before forging a block:',
-					modules.peers.getLastConsensus(),
+					modules.peers.calculateConsensus(),
 					'%',
 				].join(' ');
 
@@ -281,7 +281,7 @@ __private.forge = function(cb) {
 			library.logger.info(
 				[
 					'Broadhash consensus before forging a block:',
-					modules.peers.getLastConsensus(),
+					modules.peers.calculateConsensus(),
 					'%',
 				].join(' ')
 			);

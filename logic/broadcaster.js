@@ -105,7 +105,7 @@ class Broadcaster {
 		params.limit = params.limit || this.config.peerLimit;
 		const peers = library.logic.peers.listRandomConnected(params);
 		library.logger.info(
-			['Broadhash consensus now', modules.peers.getLastConsensus(), '%'].join(
+			['Broadhash consensus now', modules.peers.calculateConsensus(), '%'].join(
 				' '
 			)
 		);
