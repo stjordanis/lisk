@@ -266,7 +266,10 @@ __private.updatePeerStatus = function(err, status, peer) {
 				nonce: library.logic.peers.me().nonce,
 			});
 		} else {
-			library.logic.peers.remove(peer);
+			library.logic.peers.remove(
+				peer,
+				`Failed to update peer status - ${err.toString()}`
+			);
 		}
 	} else if (!modules.system.versionCompatible(status.version)) {
 		library.logger.debug(
@@ -274,7 +277,10 @@ __private.updatePeerStatus = function(err, status, peer) {
 				peer.string
 			}, version: ${status.version}`
 		);
-		library.logic.peers.remove(peer);
+		library.logic.peers.remove(
+			peer,
+			`Peer ${peer.string} version ${status.version} is incompatible`
+		);
 	} else {
 		let state;
 		// Ban peer if it is presented in the array of black listed peers
@@ -493,10 +499,11 @@ Peers.prototype.update = function(peer) {
  * Removes peer from peers list if it is not a peer from config file list.
  *
  * @param {Peer} peer
+ * @param {string} reason
  * @returns {boolean|number} Calls peers.remove
  * @todo Add description for the params
  */
-Peers.prototype.remove = function(peer) {
+Peers.prototype.remove = function(peer, reason) {
 	const frozenPeer = _.find(
 		library.config.peers.list,
 		__peer => peer.ip === __peer.ip && peer.wsPort === __peer.wsPort
@@ -511,7 +518,7 @@ Peers.prototype.remove = function(peer) {
 		library.logic.peers.upsert(peer);
 		return failureCodes.ON_MASTER.REMOVE.FROZEN_PEER;
 	}
-	return library.logic.peers.remove(peer);
+	return library.logic.peers.remove(peer, reason);
 };
 
 /**

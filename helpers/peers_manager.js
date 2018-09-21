@@ -81,7 +81,7 @@ PeersManager.prototype.add = function(peer) {
  * @todo Add description for the params
  * @todo Add @returns tag
  */
-PeersManager.prototype.remove = function(peer) {
+PeersManager.prototype.remove = function(peer, reason) {
 	if (!peer || !this.peers[peer.string]) {
 		return false;
 	}
@@ -95,7 +95,7 @@ PeersManager.prototype.remove = function(peer) {
 	this.peers[existingPeer.string] = null;
 	delete this.peers[existingPeer.string];
 
-	disconnect(existingPeer);
+	disconnect(existingPeer, reason);
 	return true;
 };
 

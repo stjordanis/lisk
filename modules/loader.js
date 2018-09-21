@@ -204,7 +204,7 @@ __private.loadSignatures = function(cb) {
 				library.logger.log(`Loading signatures from: ${peer.string}`);
 				peer.rpc.getSignatures((err, res) => {
 					if (err) {
-						modules.peers.remove(peer);
+						modules.peers.remove(peer, err.toString());
 						return setImmediate(waterCb, err);
 					}
 					library.schema.validate(res, definitions.WSSignaturesResponse, err =>
@@ -268,7 +268,7 @@ __private.loadTransactions = function(cb) {
 				library.logger.log(`Loading transactions from: ${peer.string}`);
 				peer.rpc.getTransactions((err, res) => {
 					if (err) {
-						modules.peers.remove(peer);
+						modules.peers.remove(peer, err.toString());
 						return setImmediate(waterCb, err);
 					}
 					library.schema.validate(
@@ -305,7 +305,10 @@ __private.loadTransactions = function(cb) {
 								['Transaction', id, 'is not valid, peer removed'].join(' '),
 								peer.string
 							);
-							modules.peers.remove(peer);
+							modules.peers.remove(
+								peer,
+								`Transaction normalization failed: ${e.toString()}`
+							);
 
 							return setImmediate(eachSeriesCb, e);
 						}

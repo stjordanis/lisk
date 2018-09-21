@@ -122,12 +122,13 @@ Peers.prototype.ban = function(peer) {
 	// Happens when we cannot obtain the proper address of a given peer.
 	// In such a case peer will be removed.
 	if (self.upsert(peer) === false) {
-		library.logger.info('Failed to ban peer', peer.string);
-		library.logger.debug('Failed to ban peer', {
+		const reason = 'Failed to ban peer';
+		library.logger.info(reason, peer.string);
+		library.logger.debug(reason, {
 			err: 'INVALID_PEER',
 			peer: peer.object(),
 		});
-		return self.remove(peer);
+		return self.remove(peer, reason);
 	}
 	self.banManager.banTemporarily(peer, self.unban);
 	library.logger.info('Banned peer', peer.string);
@@ -145,12 +146,13 @@ Peers.prototype.unban = function(peer) {
 	// Happens when we cannot obtain the proper address of a given peer.
 	// In such a case peer will be removed.
 	if (self.upsert(peer) === false) {
-		library.logger.info('Failed to unban peer', peer.string);
-		library.logger.debug('Failed to unban peer', {
+		const reason = 'Failed to unban peer';
+		library.logger.info(reason, peer.string);
+		library.logger.debug(reason, {
 			err: 'INVALID_PEER',
 			peer: peer.object(),
 		});
-		return self.remove(peer);
+		return self.remove(peer, reason);
 	}
 	library.logger.info('Unbanned peer', peer.string);
 	library.logger.debug('Unbanned peer', { peer: peer.object() });
@@ -278,16 +280,17 @@ Peers.prototype.upsert = function(peer, insertOnly) {
  * Deletes peer from peers list.
  *
  * @param {peer} peer
+ * @param {string} reason
  * @returns {boolean|number} true - If peer exists, error code in other case
  * @todo Add description for the params
  */
-Peers.prototype.remove = function(peer) {
+Peers.prototype.remove = function(peer, reason) {
 	peer = self.create(peer);
 	// Remove peer if exists
 	if (self.exists(peer)) {
 		library.logger.debug('Removed peer', peer.string);
 		library.logger.trace('Removed peer', { peer: peer.object() });
-		self.peersManager.remove(peer);
+		self.peersManager.remove(peer, reason);
 		return true;
 	}
 	library.logger.debug('Failed to remove peer', {

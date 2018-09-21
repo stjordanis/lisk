@@ -124,7 +124,7 @@ __private.removePeer = function(options, extraMessage) {
 			extraMessage,
 		].join(' ')
 	);
-	return modules.peers.remove(peer);
+	return modules.peers.remove(peer, extraMessage);
 };
 
 /**
@@ -629,7 +629,10 @@ Transport.prototype.shared = {
 					block: query.block,
 				});
 
-				__private.removePeer({ nonce: query.nonce, code: 'EBLOCK' });
+				__private.removePeer(
+					{ nonce: query.nonce, code: 'EBLOCK' },
+					`Block normalization failed - ${e.toString()}`
+				);
 			}
 			library.bus.message('receiveBlock', block);
 		});
@@ -867,10 +870,26 @@ Transport.prototype.internal = {
 			if (err) {
 				return setImmediate(cb, err);
 			}
-			const updates = {};
-			updates[Rules.UPDATES.INSERT] = modules.peers.update;
-			updates[Rules.UPDATES.REMOVE] = modules.peers.remove;
-			const updateResult = updates[query.updateType](query.peer);
+			let updateResult;
+			if (query.updateType === Rules.UPDATES.INSERT) {
+				updateResult = modules.peers.update(query.peer);
+			} else if (query.updateType === Rules.UPDATES.REMOVE) {
+				updateResult = modules.peers.remove(
+					query.peer,
+					`Disconnect outbound connection to peer ${query.peer.ip}:${
+						query.peer.wsPort
+					} which disonnected from us`
+				);
+			} else {
+				return setImmediate(
+					cb,
+					new Error(
+						`Unsupported query.updateType '${
+							query.updateType
+						}' passed to updatePeer`
+					)
+				);
+			}
 			return setImmediate(
 				cb,
 				updateResult === true
