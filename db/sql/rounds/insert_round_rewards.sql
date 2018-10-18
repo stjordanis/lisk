@@ -34,5 +34,5 @@ INSERT INTO rounds_rewards (
 	${fees}::bigint,
 	${reward}::bigint,
 	${round},
-	DECODE(${publicKey}, 'hex')
+	${publicKey}
 )

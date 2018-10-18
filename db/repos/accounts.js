@@ -45,8 +45,9 @@ const normalFields = [
 	{ name: 'u_username', def: null, skip: ifNotExists },
 	{
 		name: 'publicKey',
-		mod: ':raw',
-		init: () => 'encode("publicKey", \'hex\')',
+		def: null,
+		// mod: ':raw',
+		// init: () => 'encode("publicKey", \'hex\')',
 		skip: ifNotExists,
 	},
 	{
@@ -101,13 +102,6 @@ class AccountsRepository {
 				table: this.dbTable,
 			});
 			cs.update = cs.update.merge([
-				{
-					name: 'publicKey',
-					mod: ':raw',
-					init: c =>
-						_.isNil(c.value) ? 'null' : `decode('${c.value}', 'hex')`,
-					skip: ifNotExists,
-				},
 				{
 					name: 'secondPublicKey',
 					mod: ':raw',
@@ -367,7 +361,7 @@ class AccountsRepository {
 			filters.publicKey.length
 		) {
 			const decodedPublicKeys = filters.publicKey.map(
-				publicKey => `decode('${publicKey}', 'hex')`
+				publicKey => `'${publicKey}'`
 			);
 			dynamicConditions.push(
 				pgp.as.format(`"publicKey" IN (${decodedPublicKeys.join(',')})`)

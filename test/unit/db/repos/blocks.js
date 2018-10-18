@@ -359,7 +359,7 @@ describe('db', () => {
 
 			it('should aggregate rewards and response in valid format', function*() {
 				const account = yield db.one(
-					'SELECT encode("publicKey", \'hex\') as "publicKey" FROM mem_accounts LIMIT 1'
+					'SELECT "publicKey" FROM mem_accounts LIMIT 1'
 				);
 				const rewards = yield db.blocks.aggregateBlocksReward({
 					generatorPublicKey: account.publicKey,

@@ -20,10 +20,10 @@
       publicKeys - array of public keys (strings)
 */
 
-SELECT encode("publicKey", 'hex') AS "publicKey",
+SELECT "publicKey",
        username,
        address
 FROM mem_accounts
 WHERE
   "isDelegate" = 1
-  AND encode("publicKey", 'hex') IN (${publicKeys:csv})
+  AND "publicKey" IN (${publicKeys:csv})

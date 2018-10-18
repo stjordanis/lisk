@@ -27,5 +27,5 @@ WITH balances AS (
 -- Sum all calculated accounts balances
 accounts AS (SELECT b.address, SUM(b.amount) AS balance FROM balances b GROUP BY b.address)
 -- Compare calculated (based on blockchain) balances with current accounts balances (mem_accounbts)
-SELECT m.address, ENCODE(m."publicKey", 'hex') AS "publicKey", m.username, a.balance::BIGINT AS blockchain, m.balance::BIGINT AS memory, (m.balance-a.balance)::BIGINT AS diff
+SELECT m.address, m."publicKey" AS "publicKey", m.username, a.balance::BIGINT AS blockchain, m.balance::BIGINT AS memory, (m.balance-a.balance)::BIGINT AS diff
 FROM accounts a LEFT JOIN mem_accounts m ON a.address = m.address WHERE a.balance <> m.balance;

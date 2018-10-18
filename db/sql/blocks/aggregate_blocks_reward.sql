@@ -23,12 +23,12 @@ WITH delegate AS
   (SELECT 1
    FROM mem_accounts m
    WHERE m."isDelegate" = 1
-     AND m."publicKey" = decode($1, 'hex')
+     AND m."publicKey" = $1
    LIMIT 1),
      rewards AS
   (SELECT count(*), sum(reward) AS rewards, sum(fees) AS fees
    FROM rounds_rewards
-   WHERE "publicKey" = decode($1, 'hex')
+   WHERE "publicKey" = $1
      AND ($2 IS NULL
           OR "timestamp" >= $2)
      AND ($3 IS NULL

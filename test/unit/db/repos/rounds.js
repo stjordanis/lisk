@@ -700,7 +700,7 @@ describe('db', () => {
 
 				// Load records from the snapshot table
 				const result = yield db.query(
-					'SELECT *, encode("publicKey", \'hex\') as "publicKey" FROM mem_votes_snapshot'
+					'SELECT *, "publicKey" FROM mem_votes_snapshot'
 				);
 
 				expect(result).to.be.not.empty;

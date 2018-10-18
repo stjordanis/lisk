@@ -96,7 +96,7 @@ class Queries {
 	getRoundRewards(round) {
 		return self.db
 			.query(
-				'SELECT ENCODE("publicKey", \'hex\') AS "publicKey", SUM(fees) AS fees, SUM(reward) AS rewards FROM rounds_rewards WHERE round = ${round} GROUP BY "publicKey"',
+				'SELECT "publicKey", SUM(fees) AS fees, SUM(reward) AS rewards FROM rounds_rewards WHERE round = ${round} GROUP BY "publicKey"',
 				{ round }
 			)
 			.then(rows => {

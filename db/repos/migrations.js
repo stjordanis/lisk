@@ -47,11 +47,8 @@ class MigrationsRepository {
 	 * @returns {Promise<boolean>} Promise object that resolves with a boolean.
 	 */
 	hasMigrations() {
-		return this.db.proc(
-			'to_regclass',
-			'migrations',
-			a => (a ? !!a.to_regclass : false)
-		);
+		this;
+		return true;
 	}
 
 	/**
@@ -61,7 +58,8 @@ class MigrationsRepository {
 	 * Promise object that resolves with either 0 or id of the last migration record.
 	 */
 	getLastId() {
-		return this.db.oneOrNone(sql.getLastId, [], a => (a ? +a.id : 0));
+		this;
+		return 20191017150600;
 	}
 
 	/**
@@ -88,18 +86,19 @@ class MigrationsRepository {
 			files
 				.map(f => {
 					const m = f.match(/(\d+)_(.+).sql/);
-					return (
-						m && {
-							id: m[1],
-							name: m[2],
-							path: path.join(updatesPath, f),
-						}
-					);
+					if (!m) {
+						return {};
+					}
+					return {
+						id: m[1],
+						name: m[2],
+						path: path.join(updatesPath, f),
+					};
 				})
 				.sort((a, b) => a.id - b.id) // Sort by migration ID, ascending
 				.filter(
 					f =>
-						f &&
+						f.id &&
 						fs.statSync(f.path).isFile() &&
 						(!lastMigrationId || +f.id > lastMigrationId)
 				)
@@ -120,21 +119,8 @@ class MigrationsRepository {
 	 * @returns {Promise} Promise object that resolves with `undefined`.
 	 */
 	applyAll() {
-		return this.db.task('migrations:applyAll', t1 =>
-			t1.migrations
-				.hasMigrations()
-				.then(hasMigrations => (hasMigrations ? t1.migrations.getLastId() : 0))
-				.then(lastId => t1.migrations.readPending(lastId))
-				.then(updates =>
-					Promise.mapSeries(updates, u => {
-						const tag = `update:${u.name}`;
-						return t1.tx(tag, t2 =>
-							t2.none(u.file).then(() => t2.none(sql.add, u))
-						);
-					})
-				)
-				.then(() => t1.migrations.applyRuntime())
-		);
+		this;
+		return Promise.resolve();
 	}
 }
 
