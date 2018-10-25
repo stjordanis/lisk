@@ -47,8 +47,11 @@ class MigrationsRepository {
 	 * @returns {Promise<boolean>} Promise object that resolves with a boolean.
 	 */
 	hasMigrations() {
-		this;
-		return true;
+		return this.db.proc(
+			'to_regclass',
+			'migrations',
+			a => (a ? !!a.to_regclass : false)
+		);
 	}
 
 	/**
@@ -58,8 +61,7 @@ class MigrationsRepository {
 	 * Promise object that resolves with either 0 or id of the last migration record.
 	 */
 	getLastId() {
-		this;
-		return 20191017150600;
+		return this.db.oneOrNone(sql.getLastId, [], a => (a ? +a.id : 0));
 	}
 
 	/**
@@ -119,8 +121,21 @@ class MigrationsRepository {
 	 * @returns {Promise} Promise object that resolves with `undefined`.
 	 */
 	applyAll() {
-		this;
-		return Promise.resolve();
+		return this.db.task('migrations:applyAll', t1 =>
+			t1.migrations
+				.hasMigrations()
+				.then(hasMigrations => (hasMigrations ? t1.migrations.getLastId() : 0))
+				.then(lastId => t1.migrations.readPending(lastId))
+				.then(updates =>
+					Promise.mapSeries(updates, u => {
+						const tag = `update:${u.name}`;
+						return t1.tx(tag, t2 =>
+							t2.none(u.file).then(() => t2.none(sql.add, u))
+						);
+					})
+				)
+				.then(() => t1.migrations.applyRuntime())
+		);
 	}
 }
 
