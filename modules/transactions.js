@@ -120,8 +120,7 @@ __private.list = function(filter, cb) {
 		recipientId: '"t_recipientId" IN (${recipientId:csv})',
 		senderPublicKey:
 			'ENCODE ("t_senderPublicKey", \'hex\') IN (${senderPublicKey:csv})',
-		recipientPublicKey:
-			'ENCODE ("m_recipientPublicKey", \'hex\') IN (${recipientPublicKey:csv})',
+		recipientPublicKey: '"m_recipientPublicKey" IN (${recipientPublicKey:csv})',
 		minAmount: '"t_amount" >= ${minAmount}',
 		maxAmount: '"t_amount" <= ${maxAmount}',
 		type: '"t_type" = ${type}',

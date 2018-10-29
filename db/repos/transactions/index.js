@@ -328,7 +328,7 @@ const Queries = {
 		[
 			'SELECT t_id, b_height, "t_blockId", t_type, t_timestamp, "t_senderId", "t_recipientId",',
 			't_amount, t_fee, t_signature, "t_SignSignature", t_signatures, confirmations,',
-			'encode("t_senderPublicKey", \'hex\') AS "t_senderPublicKey", encode("m_recipientPublicKey", \'hex\') AS "m_recipientPublicKey"',
+			'encode("t_senderPublicKey", \'hex\') AS "t_senderPublicKey", "m_recipientPublicKey"',
 			'FROM trs_list',
 			params.where.length || params.owner ? 'WHERE' : '',
 			params.where.length ? `(${params.where.join(' ')})` : '',
