@@ -151,3 +151,8 @@ ALTER FUNCTION public.revert_mem_account() OWNER TO lisk;
 CREATE TRIGGER protect_mem_accounts BEFORE UPDATE ON public.mem_accounts FOR EACH ROW EXECUTE PROCEDURE public.revert_mem_account();
 
 CREATE INDEX mem_accounts_get_delegates ON public.mem_accounts USING btree (vote DESC, "publicKey") WHERE ("isDelegate" = 1);
+
+CREATE UNIQUE INDEX mem_accounts_publicKey ON mem_accounts ("publicKey");
+
+CREATE INDEX signatures_publicKey ON signatures ("publicKey");
+CREATE INDEX rounds_rewards_publicKey ON rounds_rewards ("publicKey");
