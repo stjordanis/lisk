@@ -170,7 +170,21 @@ Rounds.prototype.backwardTick = function(block, previousBlock, done, tx) {
 		err => {
 			// Stop round ticking
 			__private.ticking = false;
-			return done(err);
+			if (err) {
+				return done(err);
+			}
+
+			/**
+			 * If we delete first block of the round,
+			 * that means we go to last block of the previous round
+			 * That's why we need to clear the cache to recalculate
+			 * delegate list.
+			 * */
+			if (scope.finishRound) {
+				modules.delegates.clearDelegateListCache();
+			}
+
+			return done();
 		}
 	);
 };
@@ -197,7 +211,7 @@ Rounds.prototype.tick = function(block, done, tx) {
 
 	// Establish if finishing round or not
 	scope.finishRound =
-		round !== nextRound || (block.height === 1 || block.height === 101);
+		round !== nextRound || block.height === 1 || block.height === 101;
 
 	/**
 	 * Description of Tick.

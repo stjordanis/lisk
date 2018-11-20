@@ -39,6 +39,7 @@ __private.loaded = false;
 __private.keypairs = {};
 __private.tmpKeypairs = {};
 __private.forgeInterval = 1000;
+__private.delegatesListCache = {};
 
 /**
  * Main delegates methods. Initializes library with scope content and generates a Delegate instance.
@@ -98,6 +99,30 @@ class Delegates {
 }
 
 /**
+ * Caches delegate list for last 2 rounds.
+ *
+ * @private
+ * @param {number} round - Round Number
+ * @param {array} delegatesList - Delegate list
+ * @returns {Void}
+ */
+__private.updateDelegateListCache = function(round, delegatesList) {
+	library.logger.debug('Updating delegate list cache for round', round);
+	__private.delegatesListCache[round] = delegatesList;
+
+	// We want to cache delegates for only last 2 rounds and get rid of old ones
+	__private.delegatesListCache = Object.keys(__private.delegatesListCache)
+		// sort round numbers in ascending order so we can have most recent 2 rounds at the end of the list.
+		.sort()
+		// delete all round cache except last two rounds.
+		.slice(-2)
+		.reduce((acc, current) => {
+			acc[current] = __private.delegatesListCache[current];
+			return acc;
+		}, {});
+};
+
+/**
  * Gets delegate public keys sorted by vote descending.
  *
  * @private
@@ -150,37 +175,6 @@ __private.getDelegatesFromPreviousRound = function(cb, tx) {
 };
 
 /**
- * Generates delegate list and checks if block generator publicKey matches delegate id.
- *
- * @param {block} block
- * @param {function} source - Source function for get delegates
- * @param {function} cb - Callback function
- * @returns {setImmediateCallback} cb, err
- * @todo Add description for the params
- */
-__private.validateBlockSlot = function(block, source, cb) {
-	const round = slots.calcRound(block.height);
-	self.generateDelegateList(round, source, (err, activeDelegates) => {
-		if (err) {
-			return setImmediate(cb, err);
-		}
-
-		const currentSlot = slots.getSlotNumber(block.timestamp);
-		const delegateId = activeDelegates[currentSlot % ACTIVE_DELEGATES];
-
-		if (delegateId && block.generatorPublicKey === delegateId) {
-			return setImmediate(cb);
-		}
-		library.logger.error(
-			`Expected generator: ${delegateId} Received generator: ${
-				block.generatorPublicKey
-			}`
-		);
-		return setImmediate(cb, `Failed to verify slot: ${currentSlot}`);
-	});
-};
-
-/**
  * Gets the assigned delegate to current slot and returns its keypair if present.
  *
  * @private
@@ -193,7 +187,6 @@ __private.validateBlockSlot = function(block, source, cb) {
 __private.getDelegateKeypairForCurrentSlot = function(currentSlot, round, cb) {
 	self.generateDelegateList(
 		round,
-		null,
 		(generateDelegateListErr, activeDelegates) => {
 			if (generateDelegateListErr) {
 				return setImmediate(cb, generateDelegateListErr);
@@ -687,17 +680,24 @@ Delegates.prototype.updateForgingStatus = function(
  * Gets delegate list based on input function by vote and changes order.
  *
  * @param {number} round
- * @param {function} source - Source function for get delegates
  * @param {function} cb - Callback function
  * @param {Object} tx - Database transaction/task object
  * @returns {setImmediateCallback} cb, err, truncated delegate list
  * @todo Add description for the params
  */
-Delegates.prototype.generateDelegateList = function(round, source, cb, tx) {
-	// Set default function for getting delegates
-	source = source || __private.getKeysSortByVote;
+Delegates.prototype.generateDelegateList = function(round, s, cb, tx) {
+	const lastBlockRound = slots.calcRound(modules.blocks.lastBlock.get().height);
+	const source =
+		lastBlockRound > round
+			? 'getDelegatesFromPreviousRound'
+			: 'getKeysSortByVote';
 
-	source((err, truncDelegateList) => {
+	if (__private.delegatesListCache[round]) {
+		library.logger.debug('Using delegate list from the cache for round', round);
+		return setImmediate(cb, null, __private.delegatesListCache[round]);
+	}
+
+	__private[source]((err, truncDelegateList) => {
 		if (err) {
 			return setImmediate(cb, err);
 		}
@@ -721,6 +721,7 @@ Delegates.prototype.generateDelegateList = function(round, source, cb, tx) {
 				.digest();
 		}
 
+		__private.updateDelegateListCache(round, truncDelegateList);
 		return setImmediate(cb, null, truncDelegateList);
 	}, tx);
 };
@@ -734,26 +735,26 @@ Delegates.prototype.generateDelegateList = function(round, source, cb, tx) {
  * @todo Add description for the params
  */
 Delegates.prototype.validateBlockSlot = function(block, cb) {
-	__private.validateBlockSlot(block, __private.getKeysSortByVote, cb);
-};
+	const blockRound = slots.calcRound(block.height);
 
-/**
- * Generates delegate list and checks if block generator public key matches delegate id - against previous round.
- *
- * @param {block} block
- * @param {function} cb - Callback function
- * @returns {setImmediateCallback} cb, err
- * @todo Add description for the params
- */
-Delegates.prototype.validateBlockSlotAgainstPreviousRound = function(
-	block,
-	cb
-) {
-	__private.validateBlockSlot(
-		block,
-		__private.getDelegatesFromPreviousRound,
-		cb
-	);
+	self.generateDelegateList(blockRound, null, (err, activeDelegates) => {
+		if (err) {
+			return setImmediate(cb, err);
+		}
+
+		const currentSlot = slots.getSlotNumber(block.timestamp);
+		const delegateId = activeDelegates[currentSlot % ACTIVE_DELEGATES];
+
+		if (delegateId && block.generatorPublicKey === delegateId) {
+			return setImmediate(cb);
+		}
+		library.logger.error(
+			`Expected generator: ${delegateId} Received generator: ${
+				block.generatorPublicKey
+			}`
+		);
+		return setImmediate(cb, `Failed to verify slot: ${currentSlot}`);
+	});
 };
 
 /**
@@ -986,6 +987,25 @@ Delegates.prototype.onBlockchainReady = function() {
 Delegates.prototype.cleanup = function(cb) {
 	__private.loaded = false;
 	return setImmediate(cb);
+};
+
+/**
+ * Invalidates the cached delegate list.
+ *
+ * @returns {Void}
+ */
+Delegates.prototype.clearDelegateListCache = function() {
+	library.logger.debug('Clearing delegate list cache.');
+	// We want to cache delegates for only last 2 rounds and get rid of old ones
+	__private.delegatesListCache = Object.keys(__private.delegatesListCache)
+		// sort round numbers in ascending order so we can have most recent 2 rounds at the end of the list.
+		.sort()
+		// delete all round cache except previous round.
+		.slice(0, 1)
+		.reduce((acc, current) => {
+			acc[current] = __private.delegatesListCache[current];
+			return acc;
+		}, {});
 };
 
 /**
