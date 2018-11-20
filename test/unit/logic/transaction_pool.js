@@ -29,7 +29,7 @@ const jobsQueue = rewire('../../../helpers/jobs_queue.js');
 const { UNCONFIRMED_TRANSACTION_TIMEOUT } = global.constants;
 const config = __testContext.config;
 
-describe('transactionPool', () => {
+describe('transactionPool @sequential', () => {
 	let transactionPool;
 	let applyUnconfirmed;
 	let dummyProcessVerifyTransaction;
