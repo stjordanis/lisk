@@ -996,9 +996,8 @@ Delegates.prototype.cleanup = function(cb) {
  */
 Delegates.prototype.clearDelegateListCache = function() {
 	library.logger.debug('Clearing delegate list cache.');
-	// We want to cache delegates for only last 2 rounds and get rid of old ones
+	// We want to clear the cache for the latest round but want to keep the cache for previous round.
 	__private.delegatesListCache = Object.keys(__private.delegatesListCache)
-		// sort round numbers in ascending order so we can have most recent 2 rounds at the end of the list.
 		.sort()
 		// delete all round cache except previous round.
 		.slice(0, 1)
