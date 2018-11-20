@@ -604,7 +604,6 @@ Process.prototype.generateBlock = function(keypair, timestamp, cb) {
  * @private
  * @func validateBlockSlot
  * @param {Object} block - Current normalized block
- * @param {Object} lastBlock - Last normalized block
  * @param {Function} cb - Callback function
  */
 __private.validateBlockSlot = function(block, cb) {

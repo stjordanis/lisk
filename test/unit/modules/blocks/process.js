@@ -377,9 +377,8 @@ describe('blocks/process', () => {
 									id: 2,
 								});
 								return __private.validateBlockSlot.callsArgWith(
-									2,
-									'validateBlockSlot-ERR',
-									null
+									1,
+									'validateBlockSlot-ERR'
 								);
 							});
 
@@ -407,7 +406,7 @@ describe('blocks/process', () => {
 											timestamp: 1,
 											id: 2,
 										});
-										__private.validateBlockSlot.callsArgWith(2, null, true);
+										__private.validateBlockSlot.callsArgWith(1, null, true);
 										return modules.blocks.verify.verifyReceipt.returns({
 											verified: false,
 											errors: ['verifyReceipt-ERR', 'ERR2'],
@@ -449,7 +448,7 @@ describe('blocks/process', () => {
 													timestamp: 1,
 													id: 2,
 												});
-												__private.validateBlockSlot.callsArgWith(2, null, true);
+												__private.validateBlockSlot.callsArgWith(1, null, true);
 												modules.blocks.verify.verifyReceipt.returns({
 													verified: true,
 												});
@@ -485,7 +484,7 @@ describe('blocks/process', () => {
 															id: 2,
 														});
 														__private.validateBlockSlot.callsArgWith(
-															2,
+															1,
 															null,
 															true
 														);
@@ -528,7 +527,7 @@ describe('blocks/process', () => {
 															id: 2,
 														});
 														__private.validateBlockSlot.callsArgWith(
-															2,
+															1,
 															null,
 															true
 														);
@@ -680,7 +679,7 @@ describe('blocks/process', () => {
 						describe('when fails', () => {
 							beforeEach(() => {
 								return __private.validateBlockSlot.callsArgWith(
-									2,
+									1,
 									'validateBlockSlot-ERR',
 									null
 								);
@@ -704,7 +703,7 @@ describe('blocks/process', () => {
 
 						describe('when succeeds', () => {
 							beforeEach(() => {
-								return __private.validateBlockSlot.callsArgWith(2, null, true);
+								return __private.validateBlockSlot.callsArgWith(1, null, true);
 							});
 
 							describe('modules.blocks.verify.verifyReceipt', () => {
@@ -1943,115 +1942,7 @@ describe('blocks/process', () => {
 	});
 
 	describe('__private.validateBlockSlot', () => {
-		describe('lastBlock.height % ACTIVE_DELEGATES === 0', () => {
-			describe('validateBlockSlotAgainstPreviousRound', () => {
-				describe('when fails', () => {
-					beforeEach(() => {
-						return modules.delegates.validateBlockSlotAgainstPreviousRound.callsArgWith(
-							1,
-							'round-ERR',
-							null
-						);
-					});
-
-					it('should call a callback with error', done => {
-						__private.validateBlockSlot(
-							{ height: 10 },
-							{ height: 202 },
-							err => {
-								expect(err).to.equal('round-ERR');
-								expect(
-									modules.delegates.validateBlockSlotAgainstPreviousRound
-										.calledOnce
-								).to.be.true;
-								done();
-							}
-						);
-					});
-				});
-
-				describe('when succeeds', () => {
-					beforeEach(() => {
-						return modules.delegates.validateBlockSlotAgainstPreviousRound.callsArgWith(
-							1,
-							null,
-							true
-						);
-					});
-
-					it('should call a callback with no error', done => {
-						__private.validateBlockSlot(
-							{ height: 10 },
-							{ height: 202 },
-							err => {
-								expect(err).to.be.null;
-								expect(
-									modules.delegates.validateBlockSlotAgainstPreviousRound
-										.calledOnce
-								).to.be.true;
-								done();
-							}
-						);
-					});
-				});
-			});
-		});
-
 		describe('lastBlock.height % ACTIVE_DELEGATES !== 0', () => {
-			describe('roundLastBlock < roundNextBlock', () => {
-				describe('validateBlockSlotAgainstPreviousRound', () => {
-					describe('when fails', () => {
-						beforeEach(() => {
-							return modules.delegates.validateBlockSlotAgainstPreviousRound.callsArgWith(
-								1,
-								'round-ERR',
-								null
-							);
-						});
-
-						it('should call a callback with error', done => {
-							__private.validateBlockSlot(
-								{ height: 400 },
-								{ height: 200 },
-								err => {
-									expect(err).to.equal('round-ERR');
-									expect(
-										modules.delegates.validateBlockSlotAgainstPreviousRound
-											.calledOnce
-									).to.be.true;
-									done();
-								}
-							);
-						});
-					});
-
-					describe('when succeeds', () => {
-						beforeEach(() => {
-							return modules.delegates.validateBlockSlotAgainstPreviousRound.callsArgWith(
-								1,
-								null,
-								true
-							);
-						});
-
-						it('should call a callback with no error', done => {
-							__private.validateBlockSlot(
-								{ height: 400 },
-								{ height: 200 },
-								err => {
-									expect(err).to.be.null;
-									expect(
-										modules.delegates.validateBlockSlotAgainstPreviousRound
-											.calledOnce
-									).to.be.true;
-									done();
-								}
-							);
-						});
-					});
-				});
-			});
-
 			describe('roundLastBlock >= roundNextBlock', () => {
 				describe('validateBlockSlot', () => {
 					describe('when fails', () => {
@@ -2064,16 +1955,12 @@ describe('blocks/process', () => {
 						});
 
 						it('should call a callback with error', done => {
-							__private.validateBlockSlot(
-								{ height: 10 },
-								{ height: 200 },
-								err => {
-									expect(err).to.equal('round-ERR');
-									expect(modules.delegates.validateBlockSlot.calledOnce).to.be
-										.true;
-									done();
-								}
-							);
+							__private.validateBlockSlot({ height: 10 }, err => {
+								expect(err).to.equal('round-ERR');
+								expect(modules.delegates.validateBlockSlot.calledOnce).to.be
+									.true;
+								done();
+							});
 						});
 					});
 
@@ -2087,16 +1974,12 @@ describe('blocks/process', () => {
 						});
 
 						it('should call a callback with no error', done => {
-							__private.validateBlockSlot(
-								{ height: 10 },
-								{ height: 200 },
-								err => {
-									expect(err).to.be.null;
-									expect(modules.delegates.validateBlockSlot.calledOnce).to.be
-										.true;
-									done();
-								}
-							);
+							__private.validateBlockSlot({ height: 10 }, err => {
+								expect(err).to.be.null;
+								expect(modules.delegates.validateBlockSlot.calledOnce).to.be
+									.true;
+								done();
+							});
 						});
 					});
 				});
