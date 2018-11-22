@@ -140,7 +140,7 @@ __private.receiveForkOne = function(block, lastBlock, cb) {
 			},
 			// Check valid slot
 			function(seriesCb) {
-				__private.validateBlockSlot(tmp_block, seriesCb);
+				modules.delegates.validateBlockSlot(tmp_block, seriesCb);
 			},
 			// Check received block before any deletion
 			function(seriesCb) {
@@ -212,7 +212,7 @@ __private.receiveForkFive = function(block, lastBlock, cb) {
 			},
 			// Check valid slot
 			function(seriesCb) {
-				__private.validateBlockSlot(tmpBlock, seriesCb);
+				modules.delegates.validateBlockSlot(tmpBlock, seriesCb);
 			},
 			// Check received block before any deletion
 			function(seriesCb) {
@@ -596,18 +596,6 @@ Process.prototype.generateBlock = function(keypair, timestamp, cb) {
 			modules.blocks.verify.processBlock(block, true, true, cb);
 		}
 	);
-};
-
-/**
- * Validate if block generator is valid delegate.
- *
- * @private
- * @func validateBlockSlot
- * @param {Object} block - Current normalized block
- * @param {Function} cb - Callback function
- */
-__private.validateBlockSlot = function(block, cb) {
-	modules.delegates.validateBlockSlot(block, err => setImmediate(cb, err));
 };
 
 /**
