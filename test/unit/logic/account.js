@@ -114,12 +114,6 @@ describe('account', () => {
 		});
 	});
 
-	describe('objectNormalize', () => {
-		it('should validate account schema', () => {
-			return expect(account.objectNormalize(validAccount)).to.be.an('object');
-		});
-	});
-
 	describe('verifyPublicKey', () => {
 		it('should be okay for empty params', () => {
 			return expect(account.verifyPublicKey()).to.be.undefined;
