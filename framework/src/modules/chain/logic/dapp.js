@@ -20,7 +20,6 @@ const dappCategories = require('../helpers/dapp_categories.js');
 const transactionTypes = require('../helpers/transaction_types');
 const Bignum = require('../helpers/bignum.js');
 
-let library;
 const { FEES } = global.constants;
 const __private = {};
 
@@ -44,22 +43,20 @@ __private.unconfirmedAscii = {};
  * @todo Add description for the params
  */
 class DApp {
-	constructor(storage, logger, schema, network) {
-		library = {
-			storage,
-			logger,
-			schema,
-			network,
+	constructor({ components, library }) {
+		__private.components = {
+			storage: components.storage,
+			logger: components.logger,
+		};
+		__private.library = {
+			network: library.network,
+			schema: library.schema,
 		};
 	}
 }
 
 // TODO: The below functions should be converted into static functions,
 // however, this will lead to incompatibility with modules and tests implementation.
-/**
- * Binds scope.modules to private variable modules.
- */
-DApp.prototype.bind = function() {};
 
 /**
  * Returns dapp fee from constants.
@@ -200,7 +197,7 @@ DApp.prototype.verify = function(transaction, sender, cb, tx) {
 		},
 	];
 
-	return library.storage.entities.Transaction.get(
+	return __private.components.storage.entities.Transaction.get(
 		filter,
 		{ extended: true },
 		tx
@@ -226,7 +223,7 @@ DApp.prototype.verify = function(transaction, sender, cb, tx) {
 			return setImmediate(cb, null, transaction);
 		})
 		.catch(err => {
-			library.logger.error(err.stack);
+			__private.components.logger.error(err.stack);
 			return setImmediate(cb, 'DApp#verify error');
 		});
 };
@@ -454,13 +451,13 @@ DApp.prototype.objectNormalize = function(transaction) {
 		}
 	});
 
-	const report = library.schema.validate(
+	const report = __private.library.schema.validate(
 		transaction.asset.dapp,
 		DApp.prototype.schema
 	);
 
 	if (!report) {
-		throw `Failed to validate dapp schema: ${library.schema
+		throw `Failed to validate dapp schema: ${__private.library.schema
 			.getLastErrors()
 			.map(err => err.message)
 			.join(', ')}`;
@@ -503,7 +500,7 @@ DApp.prototype.dbRead = function(raw) {
  */
 DApp.prototype.afterSave = function(transaction, cb) {
 	if (library) {
-		library.network.io.sockets.emit('dapps/change', {});
+		__private.library.network.io.sockets.emit('dapps/change', {});
 	}
 	return setImmediate(cb);
 };
