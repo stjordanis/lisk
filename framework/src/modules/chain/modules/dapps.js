@@ -77,16 +77,31 @@ class DApps {
 			transactionTypes.DAPP
 		] = library.logic.transaction.attachAssetType(
 			transactionTypes.DAPP,
-			new DApp(scope.storage, scope.logger, scope.schema, scope.network)
-		);
+			new DApp({
+				components: {
+					storage: scope.storage,
+					logger: scope.logger,
+				},
+				libraries: {
+					schema: scope.schema,
+					network: scope.network,
+				},
+			})
+	);
 
 		__private.assetTypes[
 			transactionTypes.IN_TRANSFER
 		] = library.logic.transaction.attachAssetType(
 			transactionTypes.IN_TRANSFER,
-			new InTransfer(scope.storage, scope.schema)
-		);
-
+			new InTransfer({
+				components: {
+					storage: scope.storage,
+				},
+				libraries: {
+					schema: scope.schema,
+				},
+			})
+	);
 		__private.assetTypes[
 			transactionTypes.OUT_TRANSFER
 		] = library.logic.transaction.attachAssetType(
@@ -122,13 +137,11 @@ DApps.prototype.onBind = function(scope) {
 
 	__private.assetTypes[transactionTypes.IN_TRANSFER].bind(
 		scope.modules.accounts,
-		scope.modules.blocks,
 		shared
 	);
 
 	__private.assetTypes[transactionTypes.OUT_TRANSFER].bind(
 		scope.modules.accounts,
-		scope.modules.blocks,
 		scope.modules.dapps
 	);
 };
