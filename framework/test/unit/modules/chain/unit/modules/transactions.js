@@ -33,7 +33,7 @@ const DelegateLogic = require('../../../../../../src/modules/chain/logic/delegat
 const SignatureLogic = require('../../../../../../src/modules/chain/logic/signature.js');
 const MultisignatureLogic = require('../../../../../../src/modules/chain/logic/multisignature.js');
 const DappLogic = require('../../../../../../src/modules/chain/logic/dapp.js');
-const InTransferLogic = require('../../../../../../src/modules/chain//logic/in_transfer.js');
+const InTransferLogic = require('../../../../../../src/modules/chain/logic/in_transfer.js');
 const OutTransferLogic = require('../../../../../../src/modules/chain/logic/out_transfer.js');
 
 const TransactionModule = rewire(
@@ -67,7 +67,11 @@ describe('transactions', async () => {
 
 		const delegateLogic = transactionLogic.attachAssetType(
 			transactionTypes.DELEGATE,
-			new DelegateLogic(modulesLoader.scope.schema)
+			new DelegateLogic({
+				libraries: {
+					schema: modulesLoader.scope.schema,
+				},
+			})
 		);
 		delegateLogic.bind(accountsModule);
 		expect(delegateLogic).to.be.an.instanceof(DelegateLogic);
@@ -81,31 +85,49 @@ describe('transactions', async () => {
 
 		const multiLogic = transactionLogic.attachAssetType(
 			transactionTypes.MULTI,
-			new MultisignatureLogic(
-				modulesLoader.scope.schema,
-				modulesLoader.scope.network,
-				transactionLogic,
-				accountLogic,
-				modulesLoader.logger
-			)
+			new MultisignatureLogic({
+				components: {
+					logger: modulesLoader.logger,
+				},
+				libraries: {
+					schema: modulesLoader.scope.schema,
+					network: modulesLoader.scope.network,
+					logic: {
+						account: accountLogic,
+						transaction: transactionLogic,
+					},
+				},
+			})
 		);
+
 		multiLogic.bind(accountsModule);
 		expect(multiLogic).to.be.an.instanceof(MultisignatureLogic);
 
 		const dappLogic = transactionLogic.attachAssetType(
 			transactionTypes.DAPP,
-			new DappLogic(
-				modulesLoader.storage,
-				modulesLoader.logger,
-				modulesLoader.scope.schema,
-				modulesLoader.scope.network
-			)
+			new DappLogic({
+				components: {
+					storage: modulesLoader.storage,
+					logger: modulesLoader.logger,
+				},
+				libraries: {
+					schema: modulesLoader.scope.schema,
+					network: modulesLoader.scope.network,
+				},
+			})
 		);
 		expect(dappLogic).to.be.an.instanceof(DappLogic);
 
 		const inTransferLogic = transactionLogic.attachAssetType(
 			transactionTypes.IN_TRANSFER,
-			new InTransferLogic(modulesLoader.storage, modulesLoader.scope.schema)
+			new InTransferLogic({
+				components: {
+					storage: modulesLoader.storage,
+				},
+				libraries: {
+					schema: modulesLoader.scope.schema,
+				},
+			})
 		);
 		inTransferLogic.bind(accountsModule, /* sharedApi */ null);
 		expect(inTransferLogic).to.be.an.instanceof(InTransferLogic);

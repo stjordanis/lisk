@@ -423,12 +423,18 @@ function __init(initScope, done) {
 									function(multisignatureScope, multisignaturecb) {
 										multisignaturecb(
 											null,
-											new Multisignature(
-												multisignatureScope.schema,
-												multisignatureScope.network,
-												multisignatureScope.transaction,
-												multisignatureScope.logger
-											)
+											new Multisignature({
+												components: {
+													logger: multisignatureScope.logger,
+												},
+												libraries: {
+													schema: multisignatureScope.schema,
+													network: multisignatureScope.network,
+													logic: {
+														transaction: multisignatureScope.transaction,
+													},
+												},
+											})
 										);
 									},
 								],
