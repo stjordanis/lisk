@@ -87,7 +87,7 @@ class DApps {
 					network: scope.network,
 				},
 			})
-	);
+		);
 
 		__private.assetTypes[
 			transactionTypes.IN_TRANSFER
@@ -101,12 +101,21 @@ class DApps {
 					schema: scope.schema,
 				},
 			})
-	);
+		);
 		__private.assetTypes[
 			transactionTypes.OUT_TRANSFER
 		] = library.logic.transaction.attachAssetType(
 			transactionTypes.OUT_TRANSFER,
-			new OutTransfer(scope.storage, scope.schema, scope.logger)
+
+			new OutTransfer({
+				components: {
+					storage: scope.storage,
+					logger: scope.logger,
+				},
+				libraries: {
+					schema: scope.schema,
+				},
+			})
 		);
 
 		/**
