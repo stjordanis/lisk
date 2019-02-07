@@ -187,7 +187,7 @@ InTransfer.prototype.applyConfirmed = function(
 	cb,
 	tx
 ) {
-	__private.library.shared.getGenesis(
+	__private.libraries.shared.getGenesis(
 		{ dappid: transaction.asset.inTransfer.dappId },
 		(getGenesisErr, res) => {
 			if (getGenesisErr) {

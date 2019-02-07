@@ -53,14 +53,28 @@ describe('transactions', async () => {
 	) {
 		const sendLogic = transactionLogic.attachAssetType(
 			transactionTypes.SEND,
-			new TransferLogic()
+			new TransferLogic({
+				components: {
+					logger: modulesLoader.logger,
+				},
+				libraries: {
+					schema: modulesLoader.scope.schema,
+				},
+			})
 		);
 		sendLogic.bind(accountsModule);
 		expect(sendLogic).to.be.an.instanceof(TransferLogic);
 
 		const voteLogic = transactionLogic.attachAssetType(
 			transactionTypes.VOTE,
-			new VoteLogic(modulesLoader.logger, modulesLoader.scope.schema)
+			new VoteLogic({
+				components: {
+					logger: modulesLoader.logger,
+				},
+				libraries: {
+					schema: modulesLoader.scope.schema,
+				},
+			})
 		);
 		voteLogic.bind(delegatesModule);
 		expect(voteLogic).to.be.an.instanceof(VoteLogic);
@@ -78,7 +92,14 @@ describe('transactions', async () => {
 
 		const signatureLogic = transactionLogic.attachAssetType(
 			transactionTypes.SIGNATURE,
-			new SignatureLogic(modulesLoader.logger, modulesLoader.scope.schema)
+			new SignatureLogic({
+				components: {
+					logger: modulesLoader,
+				},
+				libraries: {
+					schema: modulesLoader.scope.schema,
+				},
+			})
 		);
 		signatureLogic.bind(accountsModule);
 		expect(signatureLogic).to.be.an.instanceof(SignatureLogic);
@@ -134,11 +155,15 @@ describe('transactions', async () => {
 
 		const outTransfer = transactionLogic.attachAssetType(
 			transactionTypes.OUT_TRANSFER,
-			new OutTransferLogic(
-				modulesLoader.storage,
-				modulesLoader.scope.schema,
-				modulesLoader.logger
-			)
+			new OutTransferLogic({
+				components: {
+					storage: modulesLoader.storage,
+					logger: modulesLoader.logger,
+				},
+				libraries: {
+					schema: modulesLoader.scope.schema,
+				},
+			})
 		);
 		outTransfer.bind(accountsModule, /* sharedApi */ null);
 		expect(outTransfer).to.be.an.instanceof(OutTransferLogic);

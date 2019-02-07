@@ -352,7 +352,7 @@ Multisignature.prototype.applyConfirmed = function(
 ) {
 	__private.unconfirmedSignatures[sender.address] = false;
 
-	__private.components.logic.account.merge(
+	__private.libraries.logic.account.merge(
 		sender.address,
 		{
 			membersPublicKeys: transaction.asset.multisignature.keysgroup,
@@ -534,13 +534,13 @@ Multisignature.prototype.schema = {
  * @returns {transaction} Validated transaction
  */
 Multisignature.prototype.objectNormalize = function(transaction) {
-	const report = __private.components.schema.validate(
+	const report = __private.libraries.schema.validate(
 		transaction.asset.multisignature,
 		Multisignature.prototype.schema
 	);
 
 	if (!report) {
-		throw `Failed to validate multisignature schema: ${__private.components.schema
+		throw `Failed to validate multisignature schema: ${__private.libraries.schema
 			.getLastErrors()
 			.map(err => err.message)
 			.join(', ')}`;
