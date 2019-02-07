@@ -3,12 +3,18 @@ const assert = require('assert');
 const moduleNameReg = /^[a-zA-Z][a-zA-Z0-9]*$/;
 const eventWithModuleNameReg = /^([a-zA-Z][a-zA-Z0-9]*)((?::[a-zA-Z][a-zA-Z0-9]*)+)$/;
 
+/**
+ * An event class which instance will be received by every event listener
+ *
+ * @namespace Framework
+ * @type {module.Event}
+ */
 module.exports = class Event {
 	/**
 	 *
 	 * @param name - Can be simple event or be combination of module:event
-	 * @param source - Source module which triggers the event
 	 * @param data - Data associated with the event
+	 * @param source - Source module which triggers the event
 	 */
 	constructor(name, data = null, source = null) {
 		assert(
@@ -16,11 +22,9 @@ module.exports = class Event {
 			`Event name "${name}" must be a valid name with module name.`
 		);
 
-		const matches = eventWithModuleNameReg.exec(name);
-		// eslint-disable-next-line prefer-destructuring
-		this.module = matches[1];
+		[, this.module, this.name] = eventWithModuleNameReg.exec(name);
 		// Remove the first prefixed ':' symbol
-		this.name = matches[2].substring(1);
+		this.name = this.name.substring(1);
 		this.data = data;
 
 		if (source) {
